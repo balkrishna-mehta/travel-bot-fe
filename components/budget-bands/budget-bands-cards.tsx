@@ -4,11 +4,15 @@ import { SectionCards } from "@/components/common/section-cards";
 import { useQuery } from "@tanstack/react-query";
 import { formatPercent } from "@/lib/utils";
 import { fetchBudgetBandsKpis } from "@/api/budget-bands";
+import { useAuthLoading } from "@/hooks/use-auth-loading";
 
 export function BudgetBandsCards() {
+  const { isAuthReady } = useAuthLoading();
+
   const { data: budgetBandsKpis } = useQuery({
     queryKey: ["budgetBandsKpis"],
     queryFn: () => fetchBudgetBandsKpis(),
+    enabled: isAuthReady, // Only fetch when auth initialization is complete
   });
 
   const totalBands = budgetBandsKpis?.total_budget_bands || 0;

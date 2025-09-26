@@ -17,13 +17,6 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { DepartmentCombobox } from "@/components/common/department-combobox";
 import { IconPlus, IconEdit } from "@tabler/icons-react";
 import { Manager, ManagerCreateUpdate } from "@/types/managers.types";

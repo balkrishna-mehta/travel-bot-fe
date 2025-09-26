@@ -7,7 +7,6 @@ import {
   Clock,
   CreditCard,
   Plane,
-  Train,
   Building,
   X,
   Star,
@@ -28,13 +27,13 @@ import {
   TravelRequest,
   SelectionUpdate,
   ManagerReview,
-  SessionStatus,
 } from "@/types/travel-requests.types";
 
+type TravelOption = Record<string, unknown>;
 interface SelectedItems {
-  onward: any;
-  return: any;
-  hotel: any;
+  onward: TravelOption | null;
+  return: TravelOption | null;
+  hotel: TravelOption | null;
 }
 
 const TravelBookingStepper = () => {
@@ -155,11 +154,7 @@ const TravelBookingStepper = () => {
     }
   };
 
-  const handleSelectItem = (
-    type: keyof SelectedItems,
-    item: any,
-    index: number
-  ) => {
+  const handleSelectItem = (type: keyof SelectedItems, item: TravelOption) => {
     setSelectedItems((prev) => ({
       ...prev,
       [type]: item,
@@ -239,13 +234,43 @@ const TravelBookingStepper = () => {
   };
 
   // Helper function to get safe value
-  const getValue = (obj: any, ...keys: string[]) => {
+  const getValue = (
+    obj: Record<string, unknown> | null | undefined,
+    ...keys: string[]
+  ): string | number | null => {
     for (const key of keys) {
-      if (obj && obj[key] !== undefined && obj[key] !== null) {
-        return obj[key];
+      if (obj && Object.prototype.hasOwnProperty.call(obj, key)) {
+        const value = (obj as Record<string, unknown>)[key];
+        if (value !== undefined && value !== null) {
+          if (typeof value === "string" || typeof value === "number") {
+            return value;
+          }
+        }
       }
     }
-    return "";
+    return null;
+  };
+
+  const getString = (
+    obj: Record<string, unknown> | null | undefined,
+    ...keys: string[]
+  ): string | null => {
+    const val = getValue(obj, ...keys);
+    if (typeof val === "string") return val;
+    if (typeof val === "number") return String(val);
+    return null;
+  };
+
+  const getNumber = (
+    obj: Record<string, unknown> | null | undefined,
+    ...keys: string[]
+  ): number | null => {
+    const val = getValue(obj, ...keys);
+    if (typeof val === "number") return val;
+    if (typeof val === "string" && val.trim() !== "" && !isNaN(Number(val))) {
+      return Number(val);
+    }
+    return null;
   };
 
   // Loading state
@@ -326,7 +351,7 @@ const TravelBookingStepper = () => {
                           ? "border-primary bg-accent"
                           : "border-border"
                       }`}
-                      onClick={() => handleSelectItem("onward", option, index)}
+                      onClick={() => handleSelectItem("onward", option)}
                     >
                       <div className="flex justify-between items-start">
                         <div className="space-y-2">
@@ -355,33 +380,34 @@ const TravelBookingStepper = () => {
                           </div>
                           <div className="flex items-center gap-4 text-sm">
                             <span className="text-muted-foreground">
-                              {getValue(
-                                option,
-                                "departure",
-                                "departure_time",
-                                "time"
-                              ) &&
-                                formatTime(
-                                  getValue(
-                                    option,
-                                    "departure",
-                                    "departure_time",
-                                    "time"
-                                  )
-                                )}
+                              {(() => {
+                                const dep = getString(
+                                  option,
+                                  "departure",
+                                  "departure_time",
+                                  "time"
+                                );
+                                return dep ? formatTime(dep) : null;
+                              })()}
                             </span>
-                            {getValue(option, "duration_minutes") && (
-                              <Badge variant="secondary">
-                                {formatDuration(
-                                  getValue(option, "duration_minutes")
-                                )}
-                              </Badge>
-                            )}
-                            {getValue(option, "class", "travel_class") && (
-                              <Badge variant="outline">
-                                {getValue(option, "class", "travel_class")}
-                              </Badge>
-                            )}
+                            {(() => {
+                              const dur = getNumber(option, "duration_minutes");
+                              return dur !== null ? (
+                                <Badge variant="secondary">
+                                  {formatDuration(dur)}
+                                </Badge>
+                              ) : null;
+                            })()}
+                            {(() => {
+                              const cls = getString(
+                                option,
+                                "class",
+                                "travel_class"
+                              );
+                              return cls ? (
+                                <Badge variant="outline">{cls}</Badge>
+                              ) : null;
+                            })()}
                           </div>
                           {getValue(option, "notes") && (
                             <p className="text-xs text-muted-foreground">
@@ -432,7 +458,7 @@ const TravelBookingStepper = () => {
                           ? "border-primary bg-accent"
                           : "border-border"
                       }`}
-                      onClick={() => handleSelectItem("return", option, index)}
+                      onClick={() => handleSelectItem("return", option)}
                     >
                       <div className="flex justify-between items-start">
                         <div className="space-y-2">
@@ -461,33 +487,34 @@ const TravelBookingStepper = () => {
                           </div>
                           <div className="flex items-center gap-4 text-sm">
                             <span className="text-muted-foreground">
-                              {getValue(
-                                option,
-                                "departure",
-                                "departure_time",
-                                "time"
-                              ) &&
-                                formatTime(
-                                  getValue(
-                                    option,
-                                    "departure",
-                                    "departure_time",
-                                    "time"
-                                  )
-                                )}
+                              {(() => {
+                                const dep = getString(
+                                  option,
+                                  "departure",
+                                  "departure_time",
+                                  "time"
+                                );
+                                return dep ? formatTime(dep) : null;
+                              })()}
                             </span>
-                            {getValue(option, "duration_minutes") && (
-                              <Badge variant="secondary">
-                                {formatDuration(
-                                  getValue(option, "duration_minutes")
-                                )}
-                              </Badge>
-                            )}
-                            {getValue(option, "class", "travel_class") && (
-                              <Badge variant="outline">
-                                {getValue(option, "class", "travel_class")}
-                              </Badge>
-                            )}
+                            {(() => {
+                              const dur = getNumber(option, "duration_minutes");
+                              return dur !== null ? (
+                                <Badge variant="secondary">
+                                  {formatDuration(dur)}
+                                </Badge>
+                              ) : null;
+                            })()}
+                            {(() => {
+                              const cls = getString(
+                                option,
+                                "class",
+                                "travel_class"
+                              );
+                              return cls ? (
+                                <Badge variant="outline">{cls}</Badge>
+                              ) : null;
+                            })()}
                           </div>
                           {getValue(option, "notes") && (
                             <p className="text-xs text-muted-foreground">
@@ -538,7 +565,7 @@ const TravelBookingStepper = () => {
                           ? "border-primary bg-accent"
                           : "border-border"
                       }`}
-                      onClick={() => handleSelectItem("hotel", hotel, index)}
+                      onClick={() => handleSelectItem("hotel", hotel)}
                     >
                       <div className="flex justify-between items-start">
                         <div className="space-y-2">
@@ -664,7 +691,8 @@ const TravelBookingStepper = () => {
                   <h4 className="text-lg font-semibold mb-2">Under Review</h4>
                   <p className="text-muted-foreground mb-8 max-w-md mx-auto">
                     Your travel request is being reviewed by your manager.
-                    You'll receive a notification once the decision is made.
+                    You&apos;ll receive a notification once the decision is
+                    made.
                   </p>
 
                   {/* Demo Actions */}

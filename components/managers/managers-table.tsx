@@ -35,6 +35,7 @@ import { Status } from "@/types/status.types";
 import { useRouter } from "next/navigation";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { useUrlFilters } from "@/hooks/use-url-filters";
+import { useAuthLoading } from "@/hooks/use-auth-loading";
 export type Manager = z.infer<typeof managerSchema>;
 
 // Sample data
@@ -251,6 +252,7 @@ export function ManagersTable() {
   const router = useRouter();
   const { setParam, setParams, getParam } = useUrlFilters();
   const queryClient = useQueryClient();
+  const { isAuthReady } = useAuthLoading();
   // Get current filters from URL with proper defaults (always include page/size for API)
   const filters: ManagerFilters = React.useMemo(() => {
     // Always include page and size with defaults for API calls
@@ -286,6 +288,7 @@ export function ManagersTable() {
   } = useQuery({
     queryKey: ["managers", filters],
     queryFn: () => fetchManagers(filters),
+    enabled: isAuthReady, // Only fetch when auth initialization is complete
   });
 
   console.log("apiData: ", apiData);
@@ -410,44 +413,42 @@ export function ManagersTable() {
     },
   ];
 
-  if (isLoading) {
-    return <TableLoadingState message="Loading managers..." />;
-  }
-
-  if (error) {
-    return <TableErrorState error={error} onRetry={refetch} />;
-  }
-
   return (
     <>
-      <BaseTable
-        data={apiData?.users || []}
-        columns={columns}
-        searchColumn="name"
-        searchPlaceholder="Filter managers..."
-        filters={tableFilters}
-        addButtonLabel="Add Manager"
-        onAdd={handleAddManager}
-        getRowId={(row) => String(row.id)}
-        pagination={{
-          page: filters.page || 1,
-          pageSize: filters.size || 10,
-          totalPages: apiData?.total
-            ? Math.ceil(apiData.total / (filters.size || 10))
-            : 1,
-          totalItems: apiData?.total || 0,
-        }}
-        onPaginationChange={handlePaginationChange}
-        onFilterChange={handleFilterChange}
-        onSearchChange={handleSearchChange}
-        currentFilters={{
-          search: filters.search,
-          status: filters.status,
-          department: filters.department,
-          manager_id: filters.manager_id,
-          budget_band_id: filters.budget_band_id,
-        }}
-      />
+      <div className="rounded-lg border p-6">
+        {isLoading && <TableLoadingState message="Loading managers..." />}
+        {error && <TableErrorState error={error} onRetry={refetch} />}
+        {apiData && (
+          <BaseTable
+            data={apiData?.users || []}
+            columns={columns}
+            searchColumn="name"
+            searchPlaceholder="Filter managers..."
+            filters={tableFilters}
+            addButtonLabel="Add Manager"
+            onAdd={handleAddManager}
+            getRowId={(row) => String(row.id)}
+            pagination={{
+              page: filters.page || 1,
+              pageSize: filters.size || 10,
+              totalPages: apiData?.total
+                ? Math.ceil(apiData.total / (filters.size || 10))
+                : 1,
+              totalItems: apiData?.total || 0,
+            }}
+            onPaginationChange={handlePaginationChange}
+            onFilterChange={handleFilterChange}
+            onSearchChange={handleSearchChange}
+            currentFilters={{
+              search: filters.search,
+              status: filters.status,
+              department: filters.department,
+              manager_id: filters.manager_id,
+              budget_band_id: filters.budget_band_id,
+            }}
+          />
+        )}
+      </div>
 
       <ManagerModal
         manager={selectedManager}

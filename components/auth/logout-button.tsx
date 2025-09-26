@@ -26,7 +26,7 @@ export function LogoutButton({
   className,
 }: LogoutButtonProps) {
   const dispatch = useAppDispatch();
-  const { isLoading } = useAppSelector((state: any) => state.auth);
+  const { isLoading } = useAppSelector((state) => state.auth);
   const router = useRouter();
 
   const handleLogout = async () => {

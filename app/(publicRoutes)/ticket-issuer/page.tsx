@@ -1,6 +1,7 @@
 import React from "react";
 import { TicketIssuerTable } from "@/components/ticket-issuer/ticket-issuer-table";
 import { LogoutButton } from "@/components/auth/logout-button";
+import { AuthAwareWrapper } from "@/components/common/auth-aware-wrapper";
 
 const TicketIssuerPage = () => {
   return (
@@ -14,9 +15,9 @@ const TicketIssuerPage = () => {
         </div>
         <LogoutButton />
       </div>
-      <div className="rounded-lg border p-6">
+      <AuthAwareWrapper>
         <TicketIssuerTable />
-      </div>
+      </AuthAwareWrapper>
     </div>
   );
 };

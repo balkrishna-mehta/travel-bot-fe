@@ -16,9 +16,6 @@ import {
   setRefreshToken,
   getRefreshToken,
   clearRefreshToken,
-  setAccessToken,
-  getAccessToken,
-  clearAccessToken,
 } from "@/api/auth";
 
 interface AuthContextType extends AuthState {
@@ -41,7 +38,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const initAuth = async () => {
       try {
-        const storedToken = getAccessToken();
+        const storedToken = accessToken;
         const refreshTokenValue = getRefreshToken();
 
         if (storedToken && refreshTokenValue) {
@@ -62,14 +59,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const clearAuth = useCallback(() => {
     setUser(null);
     setAccessTokenState(null);
-    clearAccessToken();
     clearRefreshToken();
   }, []);
 
   const refreshAuthToken = useCallback(async () => {
     try {
       const response = await refreshToken();
-      setAccessToken(response.access_token);
       setAccessTokenState(response.access_token);
     } catch (error) {
       console.error("Token refresh failed:", error);
@@ -85,7 +80,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const response = await loginApi({ email, password });
 
         // Store tokens
-        setAccessToken(response.access_token);
         setRefreshToken(response.refresh_token);
 
         // Update state

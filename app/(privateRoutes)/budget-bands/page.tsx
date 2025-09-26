@@ -1,6 +1,7 @@
 import React from "react";
 import { BudgetBandsTable } from "@/components/budget-bands/budget-bands-table";
 import { BudgetBandsCards } from "@/components/budget-bands/budget-bands-cards";
+import { AuthAwareWrapper } from "@/components/common/auth-aware-wrapper";
 
 const BudgetBandsPage = () => {
   return (
@@ -11,10 +12,12 @@ const BudgetBandsPage = () => {
           Configure budget limits and spending categories
         </p>
       </div>
-      <BudgetBandsCards />
-      <div className="rounded-lg border p-6">
+      <AuthAwareWrapper>
+        <BudgetBandsCards />
+      </AuthAwareWrapper>
+      <AuthAwareWrapper>
         <BudgetBandsTable />
-      </div>
+      </AuthAwareWrapper>
     </div>
   );
 };

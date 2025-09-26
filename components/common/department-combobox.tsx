@@ -197,7 +197,9 @@ function CustomDepartmentOption({
       tabIndex={0}
       role="button"
     >
-      <span>Add "{searchValue.trim()}"</span>
+      <span>
+        Add &quot;{searchValue.trim()}&quot;
+      </span>
     </div>
   );
 }

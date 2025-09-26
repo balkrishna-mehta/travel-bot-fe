@@ -21,6 +21,7 @@ export function RoleGuard({
   const router = useRouter();
 
   useEffect(() => {
+    // Only redirect if auth is not loading and we have a definitive auth state
     if (isLoading) return; // Wait for auth to initialize
 
     if (!isAuthenticated || !user) {
@@ -45,11 +46,12 @@ export function RoleGuard({
     }
   }, [user, isAuthenticated, isLoading, allowedRoles, redirectTo, router]);
 
-  // Show loading while checking auth
+  // Show a subtle loading indicator instead of blocking the entire screen
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
+      <div className="flex items-center justify-center p-4">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+        <span className="ml-2 text-sm text-gray-600">Loading...</span>
       </div>
     );
   }

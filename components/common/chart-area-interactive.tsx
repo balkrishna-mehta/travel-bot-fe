@@ -5,6 +5,7 @@ import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { useQuery } from "@tanstack/react-query";
 
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useAuthLoading } from "@/hooks/use-auth-loading";
 import {
   Card,
   CardAction,
@@ -27,7 +28,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { fetchChartData, ChartDataPoint } from "@/api/dashboard";
+import { fetchChartData } from "@/api/dashboard";
 
 export const description = "An interactive area chart";
 
@@ -44,6 +45,7 @@ const chartConfig = {
 
 export function ChartAreaInteractive() {
   const isMobile = useIsMobile();
+  const { isAuthReady } = useAuthLoading();
   const [timeRange, setTimeRange] = React.useState("90d");
 
   React.useEffect(() => {
@@ -59,6 +61,7 @@ export function ChartAreaInteractive() {
   } = useQuery({
     queryKey: ["chartData", timeRange],
     queryFn: () => fetchChartData(timeRange),
+    enabled: isAuthReady, // Only fetch when auth initialization is complete
     // refetchInterval: 30000, // Refetch every 30 seconds
   });
 

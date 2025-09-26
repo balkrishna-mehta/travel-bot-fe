@@ -26,13 +26,26 @@ import {
 } from "@/components/ui/select";
 import { IconPlus, IconEdit } from "@tabler/icons-react";
 import { Invoice } from "./invoices-table";
-import { invoiceSchema } from "@/types/invoices.types";
 
-type InvoiceFormData = z.infer<typeof invoiceSchema>;
+// Local form schema for UI fields (separate from API schema)
+const invoiceFormSchema = z.object({
+  invoiceNumber: z.string().min(1),
+  employeeId: z.number().nonnegative(),
+  employeeName: z.string().min(1),
+  travelDestination: z.string().min(1),
+  travelDates: z.string().min(1),
+  category: z.enum(["Flight", "Hotel", "Train"]),
+  amount: z.number().nonnegative(),
+  status: z.enum(["Pending", "Approved", "Paid", "Rejected"]),
+  submittedDate: z.string().min(1),
+  dueDate: z.string().min(1),
+});
+
+type InvoiceFormData = z.infer<typeof invoiceFormSchema>;
 
 interface InvoiceModalProps {
   invoice?: Invoice | null;
-  onSave: (invoice: Invoice) => void;
+  onSave: (invoice: Partial<Invoice>) => void;
   trigger?: React.ReactNode;
   mode?: "add" | "edit";
   open?: boolean;
@@ -67,19 +80,18 @@ export function InvoiceModal({
   const setOpen = controlledOnOpenChange || setInternalOpen;
 
   const form = useForm<InvoiceFormData>({
-    resolver: zodResolver(invoiceSchema),
+    resolver: zodResolver(invoiceFormSchema),
     defaultValues: {
-      invoiceNumber: invoice?.invoiceNumber || "",
-      employeeId: invoice?.employeeId || 0,
-      employeeName: invoice?.employeeName || "",
-      travelDestination: invoice?.travelDestination || "",
-      travelDates: invoice?.travelDates || "",
+      invoiceNumber: "",
+      employeeId: 0,
+      employeeName: "",
+      travelDestination: "",
+      travelDates: "",
       category: invoice?.category || "Flight",
       amount: invoice?.amount || 0,
-      status: invoice?.status || "Pending",
-      submittedDate:
-        invoice?.submittedDate || new Date().toISOString().split("T")[0],
-      dueDate: invoice?.dueDate || "",
+      status: "Pending",
+      submittedDate: new Date().toISOString().split("T")[0],
+      dueDate: "",
     },
   });
 
@@ -87,16 +99,16 @@ export function InvoiceModal({
   React.useEffect(() => {
     if (invoice) {
       form.reset({
-        invoiceNumber: invoice.invoiceNumber,
-        employeeId: invoice.employeeId,
-        employeeName: invoice.employeeName,
-        travelDestination: invoice.travelDestination,
-        travelDates: invoice.travelDates,
+        invoiceNumber: "",
+        employeeId: 0,
+        employeeName: "",
+        travelDestination: "",
+        travelDates: "",
         category: invoice.category,
         amount: invoice.amount,
-        status: invoice.status,
-        submittedDate: invoice.submittedDate,
-        dueDate: invoice.dueDate,
+        status: "Pending",
+        submittedDate: new Date().toISOString().split("T")[0],
+        dueDate: "",
       });
     } else {
       const today = new Date().toISOString().split("T")[0];
@@ -133,19 +145,10 @@ export function InvoiceModal({
   }, [selectedEmployeeId, form]);
 
   const onSubmit = (data: InvoiceFormData) => {
-    const invoiceData: Invoice = {
-      id: invoice?.id || Date.now(),
-      invoiceNumber: data.invoiceNumber,
-      employeeId: data.employeeId,
-      employeeName: data.employeeName,
-      employeeAvatar: invoice?.employeeAvatar,
-      travelDestination: data.travelDestination,
-      travelDates: data.travelDates,
+    // Map UI form fields to minimal API payload
+    const invoiceData: Partial<Invoice> = {
       category: data.category,
       amount: data.amount,
-      status: data.status,
-      submittedDate: data.submittedDate,
-      dueDate: data.dueDate,
     };
 
     onSave(invoiceData);

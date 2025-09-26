@@ -7,6 +7,7 @@ import {
 } from "@tabler/icons-react";
 
 import { Button } from "@/components/ui/button";
+import type { Column } from "@tanstack/react-table";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,15 +15,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-interface SortableColumnHeaderProps {
-  column: any;
+interface SortableColumnHeaderProps<TData, TValue> {
+  column: Column<TData, TValue>;
   children: React.ReactNode;
 }
 
-export function SortableColumnHeader({
+export function SortableColumnHeader<TData, TValue>({
   column,
   children,
-}: SortableColumnHeaderProps) {
+}: SortableColumnHeaderProps<TData, TValue>) {
   const canSort = column.getCanSort();
   const sortDirection = column.getIsSorted();
   const isSorted = sortDirection !== false;

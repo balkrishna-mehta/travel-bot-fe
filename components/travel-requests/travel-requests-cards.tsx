@@ -3,11 +3,15 @@ import React from "react";
 import { SectionCards } from "@/components/common/section-cards";
 import { useQuery } from "@tanstack/react-query";
 import { fetchTravelRequestsKpis } from "@/api/travel-requests";
+import { useAuthLoading } from "@/hooks/use-auth-loading";
 
 export function TravelRequestsCards() {
+  const { isAuthReady } = useAuthLoading();
+
   const { data: travelRequestsKpis } = useQuery({
     queryKey: ["travelRequestsKpis"],
     queryFn: () => fetchTravelRequestsKpis(),
+    enabled: isAuthReady, // Only fetch when auth initialization is complete
   });
 
   const sectionCardsData = [

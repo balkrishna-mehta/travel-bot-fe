@@ -1,4 +1,5 @@
 import { IconUser } from "@tabler/icons-react";
+import Image from "next/image";
 
 interface UserAvatarCellProps {
   name: string;
@@ -17,7 +18,13 @@ export function UserAvatarCell({
     <div className="flex items-center gap-3">
       <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center overflow-hidden">
         {avatar ? (
-          <img src={avatar} alt={name} className="h-full w-full object-cover" />
+          <Image
+            height={32}
+            width={32}
+            src={avatar}
+            alt={name}
+            className="h-full w-full object-cover"
+          />
         ) : (
           <IconUser className="h-4 w-4 text-muted-foreground" />
         )}

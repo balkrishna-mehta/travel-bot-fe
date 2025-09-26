@@ -13,7 +13,7 @@ import {
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { UserAvatarCell } from "@/components/common/user-avatar-cell";
 import { travelRequestSchema } from "@/types/travel-requests.types";
@@ -22,6 +22,7 @@ import {
   fetchManagerApprovedBookings,
   submitTicketInvoices,
 } from "@/api/travel-requests";
+import { useAuthLoading } from "@/hooks/use-auth-loading";
 
 export type TravelRequest = z.infer<typeof travelRequestSchema>;
 
@@ -626,7 +627,7 @@ const ErrorCards = ({
   error,
   onRetry,
 }: {
-  error: any;
+  error: unknown;
   onRetry: () => void;
 }) => (
   <Card className="w-full">
@@ -634,7 +635,7 @@ const ErrorCards = ({
       <div className="text-center">
         <h3 className="text-lg font-semibold mb-2">Failed to load bookings</h3>
         <p className="text-muted-foreground mb-4">
-          {error?.message || "An error occurred"}
+          {error instanceof Error ? error.message : "An error occurred"}
         </p>
         <Button onClick={onRetry}>Try Again</Button>
       </div>
@@ -644,6 +645,7 @@ const ErrorCards = ({
 
 export function TicketIssuerTable() {
   const queryClient = useQueryClient();
+  const { isAuthReady } = useAuthLoading();
   const [pagination, setPagination] = React.useState({
     page: 1,
     pageSize: 10,
@@ -669,6 +671,7 @@ export function TicketIssuerTable() {
         size: pagination.pageSize,
         user_id: filters.user_id,
       }),
+    enabled: isAuthReady, // Only fetch when auth initialization is complete
   });
 
   // Mutation for submitting ticket invoices

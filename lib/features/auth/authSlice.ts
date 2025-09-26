@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { User } from "@/types/auth.types";
 import {
   login as loginApi,
@@ -81,18 +81,15 @@ export const fetchUserData = createAsyncThunk(
   }
 );
 
-export const logoutUser = createAsyncThunk(
-  "auth/logout",
-  async (_, { rejectWithValue }) => {
-    try {
-      await logoutApi();
-    } catch (error) {
-      console.error("Logout API call failed:", error);
-    } finally {
-      clearRefreshToken();
-    }
+export const logoutUser = createAsyncThunk("auth/logout", async () => {
+  try {
+    await logoutApi();
+  } catch (error) {
+    console.error("Logout API call failed:", error);
+  } finally {
+    clearRefreshToken();
   }
-);
+});
 
 export const initializeAuth = createAsyncThunk(
   "auth/initialize",
@@ -166,7 +163,7 @@ const authSlice = createSlice({
         state.accessToken = action.payload.access_token;
         state.isAuthenticated = !!state.user && !!action.payload.access_token;
       })
-      .addCase(refreshUserToken.rejected, (state, action) => {
+      .addCase(refreshUserToken.rejected, (state) => {
         state.isLoading = false;
         state.user = null;
         state.accessToken = null;

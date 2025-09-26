@@ -26,10 +26,26 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { IconPlus, IconEdit } from "@tabler/icons-react";
-import { TravelRequest } from "./travel-requests-table";
-import { travelRequestSchema } from "@/types/travel-requests.types";
+import { TravelRequest } from "@/types/travel-requests.types";
 
-type TravelRequestFormData = z.infer<typeof travelRequestSchema>;
+// Local form schema for UI fields (separate from API schema)
+const travelRequestFormSchema = z.object({
+  requestNumber: z.string().min(1),
+  purpose: z.string().min(1),
+  requestedDate: z.string().min(1),
+  employeeId: z.number().nonnegative(),
+  employeeName: z.string().min(1),
+  employeeDepartment: z.string().min(1),
+  employeeManager: z.string().min(1),
+  destination: z.string().min(1),
+  departureDate: z.string().min(1),
+  returnDate: z.string().min(1),
+  budget: z.number().nonnegative(),
+  status: z.enum(["Pending", "Approved", "Rejected", "Completed"]),
+  submittedDate: z.string().min(1),
+});
+
+type TravelRequestFormData = z.infer<typeof travelRequestFormSchema>;
 
 interface TravelRequestModalProps {
   travelRequest?: TravelRequest | null;
@@ -91,23 +107,25 @@ export function TravelRequestModal({
   const setOpen = controlledOnOpenChange || setInternalOpen;
 
   const form = useForm<TravelRequestFormData>({
-    resolver: zodResolver(travelRequestSchema),
+    resolver: zodResolver(travelRequestFormSchema),
     defaultValues: {
-      requestNumber: travelRequest?.requestNumber || "",
+      requestNumber: "",
       purpose: travelRequest?.purpose || "",
-      requestedDate:
-        travelRequest?.requestedDate || new Date().toISOString().split("T")[0],
-      employeeId: travelRequest?.employeeId || 0,
-      employeeName: travelRequest?.employeeName || "",
-      employeeDepartment: travelRequest?.employeeDepartment || "",
-      employeeManager: travelRequest?.employeeManager || "",
+      requestedDate: new Date().toISOString().split("T")[0],
+      employeeId: 0,
+      employeeName: "",
+      employeeDepartment: "",
+      employeeManager: "",
       destination: travelRequest?.destination || "",
-      departureDate: travelRequest?.departureDate || "",
-      returnDate: travelRequest?.returnDate || "",
-      budget: travelRequest?.budget || 0,
-      status: travelRequest?.status || "Pending",
-      submittedDate:
-        travelRequest?.submittedDate || new Date().toISOString().split("T")[0],
+      departureDate: travelRequest?.departure_date
+        ? new Date(travelRequest.departure_date).toISOString().split("T")[0]
+        : "",
+      returnDate: travelRequest?.return_date
+        ? new Date(travelRequest.return_date).toISOString().split("T")[0]
+        : "",
+      budget: 0,
+      status: "Pending",
+      submittedDate: new Date().toISOString().split("T")[0],
     },
   });
 
@@ -115,19 +133,23 @@ export function TravelRequestModal({
   React.useEffect(() => {
     if (travelRequest) {
       form.reset({
-        requestNumber: travelRequest.requestNumber,
-        purpose: travelRequest.purpose,
-        requestedDate: travelRequest.requestedDate,
-        employeeId: travelRequest.employeeId,
-        employeeName: travelRequest.employeeName,
-        employeeDepartment: travelRequest.employeeDepartment,
-        employeeManager: travelRequest.employeeManager,
+        requestNumber: "",
+        purpose: travelRequest.purpose || "",
+        requestedDate: new Date().toISOString().split("T")[0],
+        employeeId: 0,
+        employeeName: "",
+        employeeDepartment: "",
+        employeeManager: "",
         destination: travelRequest.destination,
-        departureDate: travelRequest.departureDate,
-        returnDate: travelRequest.returnDate,
-        budget: travelRequest.budget,
-        status: travelRequest.status,
-        submittedDate: travelRequest.submittedDate,
+        departureDate: travelRequest.departure_date
+          ? new Date(travelRequest.departure_date).toISOString().split("T")[0]
+          : "",
+        returnDate: travelRequest.return_date
+          ? new Date(travelRequest.return_date).toISOString().split("T")[0]
+          : "",
+        budget: 0,
+        status: "Pending",
+        submittedDate: new Date().toISOString().split("T")[0],
       });
     } else {
       const today = new Date().toISOString().split("T")[0];
@@ -164,22 +186,29 @@ export function TravelRequestModal({
   }, [selectedEmployeeId, form]);
 
   const onSubmit = (data: TravelRequestFormData) => {
+    // Map UI form fields to API payload
     const travelRequestData: TravelRequest = {
-      id: travelRequest?.id || Date.now(),
-      requestNumber: data.requestNumber,
+      id: travelRequest?.id || `req-${Date.now()}`,
+      user_id: travelRequest?.user_id || `user-${data.employeeId}`,
+      session_id: travelRequest?.session_id || `session-${Date.now()}`,
+      version: travelRequest?.version || 1,
       purpose: data.purpose,
-      requestedDate: data.requestedDate,
-      employeeId: data.employeeId,
-      employeeName: data.employeeName,
-      employeeAvatar: travelRequest?.employeeAvatar,
-      employeeDepartment: data.employeeDepartment,
-      employeeManager: data.employeeManager,
       destination: data.destination,
-      departureDate: data.departureDate,
-      returnDate: data.returnDate,
-      budget: data.budget,
-      status: data.status,
-      submittedDate: data.submittedDate,
+      departure_date: new Date(data.departureDate).toISOString(),
+      return_date: new Date(data.returnDate).toISOString(),
+      onward_options: travelRequest?.onward_options || [],
+      return_options: travelRequest?.return_options || [],
+      hotel_options: travelRequest?.hotel_options || [],
+      selected_onward_index: travelRequest?.selected_onward_index || null,
+      selected_return_index: travelRequest?.selected_return_index || null,
+      selected_hotel_index: travelRequest?.selected_hotel_index || null,
+      status: "Active",
+      inactive_reason: null,
+      manager_feedback: null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      user: travelRequest?.user,
+      session: travelRequest?.session,
     };
 
     onSave(travelRequestData);

@@ -17,14 +17,6 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { IconPlus, IconEdit } from "@tabler/icons-react";
 import { BudgetBand } from "./budget-bands-table";
 import { budgetBandCreateUpdateSchema } from "@/types/budget-bands.types";
@@ -39,9 +31,6 @@ interface BudgetBandModalProps {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
 }
-
-// Sample data for dropdowns
-const statuses = ["Active", "Inactive"] as const;
 
 export function BudgetBandModal({
   budgetBand = null,

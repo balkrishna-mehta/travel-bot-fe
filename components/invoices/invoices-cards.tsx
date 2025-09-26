@@ -3,11 +3,15 @@ import React from "react";
 import { SectionCards } from "@/components/common/section-cards";
 import { useQuery } from "@tanstack/react-query";
 import { fetchInvoicesKpis } from "@/api/invoices";
+import { useAuthLoading } from "@/hooks/use-auth-loading";
 
 export function InvoicesCards() {
+  const { isAuthReady } = useAuthLoading();
+
   const { data: invoicesKpis } = useQuery({
     queryKey: ["invoicesKpis"],
     queryFn: () => fetchInvoicesKpis(),
+    enabled: isAuthReady, // Only fetch when auth initialization is complete
   });
 
   const sectionCardsData = [

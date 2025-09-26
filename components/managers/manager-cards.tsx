@@ -4,11 +4,15 @@ import { SectionCards } from "@/components/common/section-cards";
 import { useQuery } from "@tanstack/react-query";
 import { formatPercent } from "@/lib/utils";
 import { fetchManagerKpis } from "@/api/managers";
+import { useAuthLoading } from "@/hooks/use-auth-loading";
 
 export function ManagerCards() {
+  const { isAuthReady } = useAuthLoading();
+
   const { data: managerKpis } = useQuery({
     queryKey: ["managerKpis"],
     queryFn: () => fetchManagerKpis(),
+    enabled: isAuthReady, // Only fetch when auth initialization is complete
   });
 
   const totalManagers = managerKpis?.total_managers || 0;

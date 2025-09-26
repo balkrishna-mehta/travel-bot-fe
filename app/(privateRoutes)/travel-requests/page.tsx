@@ -1,6 +1,7 @@
 import React from "react";
 import { TravelRequestsTable } from "@/components/travel-requests/travel-requests-table";
 import { TravelRequestsCards } from "@/components/travel-requests/travel-requests-cards";
+import { AuthAwareWrapper } from "@/components/common/auth-aware-wrapper";
 
 const TravelRequestsPage = () => {
   return (
@@ -11,10 +12,12 @@ const TravelRequestsPage = () => {
           Review and manage travel requests from employees
         </p>
       </div>
-      <TravelRequestsCards />
-      <div className="rounded-lg border p-6">
+      <AuthAwareWrapper>
+        <TravelRequestsCards />
+      </AuthAwareWrapper>
+      <AuthAwareWrapper>
         <TravelRequestsTable />
-      </div>
+      </AuthAwareWrapper>
     </div>
   );
 };

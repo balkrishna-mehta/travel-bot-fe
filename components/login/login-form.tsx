@@ -24,7 +24,7 @@ export function LoginForm({
   ...props
 }: React.ComponentProps<"div">) {
   const dispatch = useAppDispatch();
-  const { isLoading, error } = useAppSelector((state: any) => state.auth);
+  const { isLoading, error } = useAppSelector((state) => state.auth);
   const [localError, setLocalError] = useState<string | null>(null);
   const router = useRouter();
 

@@ -31,6 +31,7 @@ import {
   toggleBudgetBandStatus,
   updateBudgetBand,
 } from "@/api/budget-bands";
+import { useAuthLoading } from "@/hooks/use-auth-loading";
 import { Status } from "@/types/status.types";
 import { useRouter } from "next/navigation";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
@@ -250,6 +251,8 @@ const createColumns = (
 export function BudgetBandsTable() {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { isAuthReady } = useAuthLoading();
+
   const {
     data: apiData,
     isLoading,
@@ -258,6 +261,7 @@ export function BudgetBandsTable() {
   } = useQuery({
     queryKey: ["budget-bands"],
     queryFn: () => fetchBudgetBands(),
+    enabled: isAuthReady, // Only fetch when auth initialization is complete
   });
 
   const [selectedBudgetBand, setSelectedBudgetBand] =
@@ -274,10 +278,11 @@ export function BudgetBandsTable() {
       refetch();
       queryClient.invalidateQueries({ queryKey: ["budgetBandsKpis"] });
     },
-    onError: (error) => {
+    onError: (error: unknown) => {
       console.error("Failed to create budget band:", error);
       // You can add toast notification here if you have a toast library
-      alert(`Failed to create budget band: ${error.message}`);
+      const message = error instanceof Error ? error.message : "Unknown error";
+      alert(`Failed to create budget band: ${message}`);
     },
   });
 
@@ -291,10 +296,11 @@ export function BudgetBandsTable() {
       refetch();
       queryClient.invalidateQueries({ queryKey: ["budgetBandsKpis"] });
     },
-    onError: (error) => {
+    onError: (error: unknown) => {
       console.error("Failed to update budget band:", error);
       // You can add toast notification here if you have a toast library
-      alert(`Failed to update budget band: ${error.message}`);
+      const message = error instanceof Error ? error.message : "Unknown error";
+      alert(`Failed to update budget band: ${message}`);
     },
   });
 
@@ -360,26 +366,24 @@ export function BudgetBandsTable() {
     },
   ];
 
-  if (isLoading) {
-    return <TableLoadingState message="Loading budget bands..." />;
-  }
-
-  if (error) {
-    return <TableErrorState error={error} onRetry={refetch} />;
-  }
-
   return (
     <>
-      <BaseTable
-        data={apiData?.budget_bands || []}
-        columns={columns}
-        searchColumn="name"
-        searchPlaceholder="Filter budget bands..."
-        filters={filters}
-        addButtonLabel="Add Budget Band"
-        onAdd={handleAddBudgetBand}
-        getRowId={(row) => String(row.id)}
-      />
+      <div className="rounded-lg border p-6">
+        {isLoading && <TableLoadingState message="Loading budget bands..." />}
+        {error && <TableErrorState error={error} onRetry={refetch} />}
+        {apiData && (
+          <BaseTable
+            data={apiData?.budget_bands || []}
+            columns={columns}
+            searchColumn="name"
+            searchPlaceholder="Filter budget bands..."
+            filters={filters}
+            addButtonLabel="Add Budget Band"
+            onAdd={handleAddBudgetBand}
+            getRowId={(row) => String(row.id)}
+          />
+        )}
+      </div>
 
       <BudgetBandModal
         budgetBand={selectedBudgetBand}

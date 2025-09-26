@@ -8,25 +8,17 @@ import {
   IconEye,
   IconDownload,
 } from "@tabler/icons-react";
-import { z } from "zod";
 
 import { Badge } from "@/components/ui/badge";
 import {
   BaseTable,
   createSelectionColumn,
 } from "@/components/common/base-table";
-import {
-  StatusBadge,
-  commonStatusConfigs,
-} from "@/components/common/status-badge";
 import { SortableColumnHeader } from "@/components/common/sortable-column-header";
 import { TableActions } from "@/components/common/table-actions";
 import { UserAvatarCell } from "@/components/common/user-avatar-cell";
 import { InvoiceModal } from "@/components/invoices/invoice-modal";
-import {
-  invoiceWithDetailsSchema,
-  InvoiceWithDetails,
-} from "@/types/invoices.types";
+import { InvoiceWithDetails } from "@/types/invoices.types";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import {
   TableLoadingState,
@@ -39,19 +31,9 @@ import {
   deleteInvoice,
   downloadInvoice,
 } from "@/api/invoices";
+import { useAuthLoading } from "@/hooks/use-auth-loading";
 
 export type Invoice = InvoiceWithDetails;
-
-// Status configurations
-const invoiceStatusConfigs = {
-  Pending: commonStatusConfigs.pending,
-  Approved: {
-    variant: "default" as const,
-    className: "bg-blue-600 text-white hover:bg-blue-700",
-  },
-  Paid: commonStatusConfigs.paid,
-  Rejected: commonStatusConfigs.rejected,
-};
 
 // Category badge component
 function CategoryBadge({ category }: { category: Invoice["category"] }) {
@@ -108,14 +90,7 @@ const createColumns = (
       if (!employee) {
         return <div className="text-muted-foreground">No employee data</div>;
       }
-      return (
-        <UserAvatarCell
-          name={employee.name}
-          avatar={`https://ui-avatars.com/api/?name=${encodeURIComponent(
-            employee.name
-          )}&background=random`}
-        />
-      );
+      return <UserAvatarCell name={employee.name} avatar={``} />;
     },
     enableHiding: false,
   },
@@ -212,6 +187,8 @@ const createColumns = (
 ];
 
 export function InvoicesTable() {
+  const { isAuthReady } = useAuthLoading();
+
   const {
     data: apiData,
     isLoading,
@@ -220,6 +197,7 @@ export function InvoicesTable() {
   } = useQuery({
     queryKey: ["invoices"],
     queryFn: () => fetchInvoices(),
+    enabled: isAuthReady, // Only fetch when auth initialization is complete
   });
 
   const [selectedInvoice, setSelectedInvoice] = React.useState<Invoice | null>(
@@ -235,9 +213,10 @@ export function InvoicesTable() {
       setSelectedInvoice(null);
       refetch();
     },
-    onError: (error) => {
+    onError: (error: unknown) => {
       console.error("Failed to create invoice:", error);
-      alert(`Failed to create invoice: ${error.message}`);
+      const message = error instanceof Error ? error.message : "Unknown error";
+      alert(`Failed to create invoice: ${message}`);
     },
   });
 
@@ -249,9 +228,10 @@ export function InvoicesTable() {
       setSelectedInvoice(null);
       refetch();
     },
-    onError: (error) => {
+    onError: (error: unknown) => {
       console.error("Failed to update invoice:", error);
-      alert(`Failed to update invoice: ${error.message}`);
+      const message = error instanceof Error ? error.message : "Unknown error";
+      alert(`Failed to update invoice: ${message}`);
     },
   });
 
@@ -260,9 +240,10 @@ export function InvoicesTable() {
     onSuccess: () => {
       refetch();
     },
-    onError: (error) => {
+    onError: (error: unknown) => {
       console.error("Failed to delete invoice:", error);
-      alert(`Failed to delete invoice: ${error.message}`);
+      const message = error instanceof Error ? error.message : "Unknown error";
+      alert(`Failed to delete invoice: ${message}`);
     },
   });
 
@@ -346,26 +327,24 @@ export function InvoicesTable() {
     },
   ];
 
-  if (isLoading) {
-    return <TableLoadingState message="Loading invoices..." />;
-  }
-
-  if (error) {
-    return <TableErrorState error={error} onRetry={refetch} />;
-  }
-
   return (
     <>
-      <BaseTable
-        data={apiData?.invoices || []}
-        columns={columns}
-        searchColumn="id"
-        searchPlaceholder="Filter invoices..."
-        filters={filters}
-        addButtonLabel="Add Invoice"
-        onAdd={handleAddInvoice}
-        getRowId={(row) => String(row.id)}
-      />
+      <div className="rounded-lg border p-6">
+        {isLoading && <TableLoadingState message="Loading invoices..." />}
+        {error && <TableErrorState error={error} onRetry={refetch} />}
+        {apiData && (
+          <BaseTable
+            data={apiData?.invoices || []}
+            columns={columns}
+            searchColumn="id"
+            searchPlaceholder="Filter invoices..."
+            filters={filters}
+            addButtonLabel="Add Invoice"
+            onAdd={handleAddInvoice}
+            getRowId={(row) => String(row.id)}
+          />
+        )}
+      </div>
 
       <InvoiceModal
         invoice={selectedInvoice}

@@ -23,7 +23,6 @@ import {
   UserCheck,
   Users,
 } from "lucide-react";
-import { useAppSelector } from "@/lib/hooks";
 
 const data = {
   user: {

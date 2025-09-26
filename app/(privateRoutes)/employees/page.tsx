@@ -1,6 +1,7 @@
 import React from "react";
 import { EmployeesTable } from "@/components/employees/employees-table";
 import { EmployeesCards } from "@/components/employees/employees-cards";
+import { AuthAwareWrapper } from "@/components/common/auth-aware-wrapper";
 
 const EmployeesPage = () => {
   return (
@@ -11,10 +12,12 @@ const EmployeesPage = () => {
           Manage your team members and their roles
         </p>
       </div>
-      <EmployeesCards />
-      <div className="rounded-lg border p-6">
+      <AuthAwareWrapper>
+        <EmployeesCards />
+      </AuthAwareWrapper>
+      <AuthAwareWrapper>
         <EmployeesTable />
-      </div>
+      </AuthAwareWrapper>
     </div>
   );
 };

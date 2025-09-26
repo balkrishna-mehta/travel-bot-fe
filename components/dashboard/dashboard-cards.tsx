@@ -5,11 +5,15 @@ import { useQuery } from "@tanstack/react-query";
 import { formatPercent } from "@/lib/utils";
 import { fetchDashboardKpis } from "@/api/dashboard";
 import { Users } from "lucide-react";
+import { useAuthLoading } from "@/hooks/use-auth-loading";
 
 export function DashboardCards() {
+  const { isAuthReady } = useAuthLoading();
+
   const { data: dashboardKpis } = useQuery({
     queryKey: ["dashboardKpis"],
     queryFn: () => fetchDashboardKpis(),
+    enabled: isAuthReady, // Only fetch when auth initialization is complete
   });
 
   const currentEmployees = dashboardKpis?.total_employees.current || 0;

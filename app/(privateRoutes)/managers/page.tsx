@@ -1,6 +1,7 @@
 import React from "react";
 import { ManagersTable } from "@/components/managers/managers-table";
 import { ManagerCards } from "@/components/managers/manager-cards";
+import { AuthAwareWrapper } from "@/components/common/auth-aware-wrapper";
 
 const ManagersPage = () => {
   return (
@@ -11,10 +12,14 @@ const ManagersPage = () => {
           Manage managers and their permissions
         </p>
       </div>
-      <ManagerCards />
-      <div className="rounded-lg border p-6">
+
+      <AuthAwareWrapper>
+        <ManagerCards />
+      </AuthAwareWrapper>
+
+      <AuthAwareWrapper>
         <ManagersTable />
-      </div>
+      </AuthAwareWrapper>
     </div>
   );
 };

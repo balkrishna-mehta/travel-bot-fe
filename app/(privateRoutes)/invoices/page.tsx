@@ -3,6 +3,7 @@ import { Download } from "lucide-react";
 import React from "react";
 import { InvoicesTable } from "@/components/invoices/invoices-table";
 import { InvoicesCards } from "@/components/invoices/invoices-cards";
+import { AuthAwareWrapper } from "@/components/common/auth-aware-wrapper";
 
 const InvoicesPage = () => {
   return (
@@ -27,10 +28,12 @@ const InvoicesPage = () => {
           </div>
         </div>
       </div>
-      <InvoicesCards />
-      <div className="rounded-lg border p-6">
+      <AuthAwareWrapper>
+        <InvoicesCards />
+      </AuthAwareWrapper>
+      <AuthAwareWrapper>
         <InvoicesTable />
-      </div>
+      </AuthAwareWrapper>
     </div>
   );
 };

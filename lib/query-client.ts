@@ -8,10 +8,15 @@ export function makeQueryClient() {
         // above 0 to avoid refetching immediately on the client
         staleTime: 60 * 1000, // 1 minute
         gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
-        retry: (failureCount, error) => {
+        retry: (failureCount, error: unknown) => {
           // Don't retry on 4xx errors
-          if (error instanceof Error && "status" in error) {
-            const status = (error as any).status;
+          if (
+            typeof error === "object" &&
+            error !== null &&
+            "status" in error &&
+            typeof (error as { status?: unknown }).status === "number"
+          ) {
+            const status = (error as { status: number }).status;
             if (status >= 400 && status < 500) {
               return false;
             }

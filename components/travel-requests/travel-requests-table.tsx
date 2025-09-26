@@ -11,8 +11,6 @@ import {
   IconCalendar,
   IconMapPin,
 } from "@tabler/icons-react";
-import { z } from "zod";
-
 import {
   BaseTable,
   createSelectionColumn,
@@ -28,29 +26,19 @@ import {
 } from "@/components/common/table-actions";
 import { UserAvatarCell } from "@/components/common/user-avatar-cell";
 import { TravelRequestModal } from "@/components/travel-requests/travel-request-modal";
-import {
-  TravelRequest,
-  travelRequestSchema,
-} from "@/types/travel-requests.types";
+import { TravelRequest } from "@/types/travel-requests.types";
 import { useQuery } from "@tanstack/react-query";
 import {
   TableLoadingState,
   TableErrorState,
 } from "@/components/common/loading-spinner";
 import { fetchTravelRequests } from "@/api/travel-requests";
+import { useAuthLoading } from "@/hooks/use-auth-loading";
 
 // Status configurations
 const travelRequestStatusConfigs = {
   Active: commonStatusConfigs.approved,
   Inactive: commonStatusConfigs.rejected,
-};
-
-// Currency formatter
-const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(amount);
 };
 
 // Date formatter
@@ -243,6 +231,8 @@ const createColumns = (
 ];
 
 export function TravelRequestsTable() {
+  const { isAuthReady } = useAuthLoading();
+
   const {
     data: apiData,
     isLoading,
@@ -251,6 +241,7 @@ export function TravelRequestsTable() {
   } = useQuery({
     queryKey: ["travel-requests"],
     queryFn: () => fetchTravelRequests(),
+    enabled: isAuthReady, // Only fetch when auth initialization is complete
   });
 
   const [selectedRequest, setSelectedRequest] =
@@ -270,16 +261,13 @@ export function TravelRequestsTable() {
     setIsModalOpen(true);
   }, []);
 
-  const handleSaveRequest = React.useCallback(
-    (request: TravelRequest) => {
-      // For now, just close the modal. In a real app, you'd make an API call here
-      setIsModalOpen(false);
-      setSelectedRequest(null);
-      // Refetch data to get the latest from API
-      refetch();
-    },
-    [refetch]
-  );
+  const handleSaveRequest = React.useCallback(() => {
+    // For now, just close the modal. In a real app, you'd make an API call here
+    setIsModalOpen(false);
+    setSelectedRequest(null);
+    // Refetch data to get the latest from API
+    refetch();
+  }, [refetch]);
 
   const handleActivateRequest = React.useCallback(
     (request: TravelRequest) => {
@@ -335,30 +323,26 @@ export function TravelRequestsTable() {
     },
   ];
 
-  if (isLoading) {
-    return <TableLoadingState message="Loading travel requests..." />;
-  }
-
-  if (error) {
-    return <TableErrorState error={error} onRetry={refetch} />;
-  }
-
-  if (!apiData) {
-    return <TableLoadingState message="Loading travel requests..." />;
-  }
-
   return (
     <>
-      <BaseTable
-        data={apiData.travel_requests || []}
-        columns={columns}
-        // searchColumn="purpose"
-        searchPlaceholder="Filter requests by purpose..."
-        filters={filters}
-        addButtonLabel="Add Request"
-        onAdd={handleAddRequest}
-        getRowId={(row) => String(row.id)}
-      />
+      <div className="rounded-lg border p-6">
+        {isLoading && (
+          <TableLoadingState message="Loading travel requests..." />
+        )}
+        {error && <TableErrorState error={error} onRetry={refetch} />}
+        {apiData && (
+          <BaseTable
+            data={apiData.travel_requests || []}
+            columns={columns}
+            // searchColumn="purpose"
+            searchPlaceholder="Filter requests by purpose..."
+            filters={filters}
+            addButtonLabel="Add Request"
+            onAdd={handleAddRequest}
+            getRowId={(row) => String(row.id)}
+          />
+        )}
+      </div>
 
       <TravelRequestModal
         travelRequest={selectedRequest}

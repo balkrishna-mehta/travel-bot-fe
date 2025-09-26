@@ -4,11 +4,15 @@ import { SectionCards } from "@/components/common/section-cards";
 import { useQuery } from "@tanstack/react-query";
 import { formatPercent } from "@/lib/utils";
 import { fetchEmployeeKpis } from "@/api/employees";
+import { useAuthLoading } from "@/hooks/use-auth-loading";
 
 export function EmployeesCards() {
+  const { isAuthReady } = useAuthLoading();
+
   const { data: employeeKpis } = useQuery({
     queryKey: ["employeeKpis"],
     queryFn: () => fetchEmployeeKpis(),
+    enabled: isAuthReady, // Only fetch when auth initialization is complete
   });
 
   const totalEmployees = employeeKpis?.total_employees || 0;
